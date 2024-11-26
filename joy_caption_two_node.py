@@ -26,6 +26,8 @@ from .joy_config import joy_config
 DEVICE = get_torch_device()
 
 BASE_MODEL_PATH = Path(folder_paths.models_dir, "Joy_caption_two")
+if os.path.exists('/stable-diffusion-cache/models/Joy_caption_alpha'):
+    BASE_MODEL_PATH = Path('/stable-diffusion-cache/models/Joy_caption_alpha')
 
 def tensor2pil(t_image: torch.Tensor)  -> Image:
     return Image.fromarray(np.clip(255.0 * t_image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8))
