@@ -26,8 +26,6 @@ from .joy_config import joy_config
 DEVICE = get_torch_device()
 
 BASE_MODEL_PATH = Path(folder_paths.models_dir, "Joy_caption_two")
-if os.path.exists('/stable-diffusion-cache/models/Joy_caption_alpha'):
-    BASE_MODEL_PATH = Path('/stable-diffusion-cache/models/Joy_caption_alpha')
 
 def tensor2pil(t_image: torch.Tensor)  -> Image:
     return Image.fromarray(np.clip(255.0 * t_image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8))
@@ -49,6 +47,10 @@ class JoyClipVisionModel:
         )
 
         clip_model = clip_model.vision_model
+        if (not BASE_MODEL_PATH.exists()) or (not (BASE_MODEL_PATH / "clip_model.pt").exists()):
+            if os.path.exists('/stable-diffusion-cache/models/Joy_caption_alpha'):
+                os.makedirs(os.path.join(folder_paths.models_dir, "Joy_caption_two"), exist_ok=True)
+                os.system(f'cp -rf /stable-diffusion-cache/models/Joy_caption_alpha/* {os.path.join(folder_paths.models_dir, "Joy_caption_two")}/')
 
         assert (BASE_MODEL_PATH / "clip_model.pt").exists()
         print("Loading VLM's custom vision model")
@@ -127,6 +129,11 @@ class JoyImageAdapter:
         self.load_device = load_device
         self.offload_device = offload_device
 
+        if (not BASE_MODEL_PATH.exists()) or (not (BASE_MODEL_PATH / "image_adapter.pt").exists()):
+            if os.path.exists('/stable-diffusion-cache/models/Joy_caption_alpha'):
+                os.makedirs(os.path.join(folder_paths.models_dir, "Joy_caption_two"), exist_ok=True)
+                os.system(f'cp -rf /stable-diffusion-cache/models/Joy_caption_alpha/* {os.path.join(folder_paths.models_dir, "Joy_caption_two")}/')
+
         # Image Adapter
         adapter_path = os.path.join(BASE_MODEL_PATH, "image_adapter.pt")
 
@@ -154,6 +161,11 @@ class JoyLLM:
         self.type = text_encoder_dtype()
         self.model_id = model_id
         self.current_model_id = None
+
+        if (not BASE_MODEL_PATH.exists()) or (not (BASE_MODEL_PATH / "text_model").exists()):
+            if os.path.exists('/stable-diffusion-cache/models/Joy_caption_alpha'):
+                os.makedirs(os.path.join(folder_paths.models_dir, "Joy_caption_two"), exist_ok=True)
+                os.system(f'cp -rf /stable-diffusion-cache/models/Joy_caption_alpha/* {os.path.join(folder_paths.models_dir, "Joy_caption_two")}/')
 
         print("Loading tokenizer")
         tokenizer = AutoTokenizer.from_pretrained(os.path.join(BASE_MODEL_PATH, "text_model"), use_fast=True)
