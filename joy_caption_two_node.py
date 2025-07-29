@@ -22,6 +22,7 @@ from comfy.model_management import load_models_gpu, text_encoder_dtype
 from comfy.model_patcher import ModelPatcher
 from .uitls import download_hg_model, modify_json_value, clear_cache
 from .joy_config import joy_config
+from comfy.cli_args import args
 
 DEVICE = get_torch_device()
 
@@ -54,7 +55,10 @@ class JoyClipVisionModel:
 
         assert (BASE_MODEL_PATH / "clip_model.pt").exists()
         print("Loading VLM's custom vision model")
-        checkpoint = torch.load(BASE_MODEL_PATH / "clip_model.pt", map_location='cpu', weights_only=True)
+        if args.cache_root!="/stable-diffusion-cache" and os.path.exists(os.path.join(args.cache_root, "models/Joy_caption_alpha")):
+            checkpoint = torch.load(os.path.join(args.cache_root, "models/Joy_caption_alpha/clip_model.pt"), map_location='cpu', weights_only=True)
+        else:
+            checkpoint = torch.load(BASE_MODEL_PATH / "clip_model.pt", map_location='cpu', weights_only=True)
         checkpoint = {k.replace("_orig_mod.module.", ""): v for k, v in checkpoint.items()}
         clip_model.load_state_dict(checkpoint)
         del checkpoint
@@ -168,7 +172,10 @@ class JoyLLM:
                 os.system(f'cp -rf /stable-diffusion-cache/models/Joy_caption_alpha/* {os.path.join(folder_paths.models_dir, "Joy_caption_two")}/')
 
         print("Loading tokenizer")
-        tokenizer = AutoTokenizer.from_pretrained(os.path.join(BASE_MODEL_PATH, "text_model"), use_fast=True)
+        if args.cache_root!="/stable-diffusion-cache" and os.path.exists(os.path.join(args.cache_root, "models/Joy_caption_alpha")):
+            tokenizer = AutoTokenizer.from_pretrained(os.path.join(args.cache_root, "models/Joy_caption_alpha/text_model"), use_fast=True)
+        else:
+            tokenizer = AutoTokenizer.from_pretrained(os.path.join(BASE_MODEL_PATH, "text_model"), use_fast=True)
         assert isinstance(tokenizer, PreTrainedTokenizer) or isinstance(tokenizer,
                                                                         PreTrainedTokenizerFast), f"Tokenizer is of type {type(tokenizer)}"
 
@@ -180,6 +187,8 @@ class JoyLLM:
             print(f"Loading LLM: {self.model_id}")
             LLM_PATH = download_hg_model(self.model_id, "LLM")
             text_model_path = os.path.join(BASE_MODEL_PATH, "text_model")
+            if args.cache_root!="/stable-diffusion-cache" and os.path.exists(os.path.join(args.cache_root, "models/Joy_caption_alpha")):
+                text_model_path = os.path.join(args.cache_root, "models/Joy_caption_alpha/text_model")
             modify_json_value(os.path.join(text_model_path, "adapter_config.json"), "base_model_name_or_path",
                               LLM_PATH)
             max_retries = 5  # 设置最大重试次数
