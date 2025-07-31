@@ -9,7 +9,9 @@ from comfy.model_management import unload_all_models, soft_empty_cache
 def download_hg_model(model_id:str, exDir:str=''):
     # 下载本地
     model_checkpoint = os.path.join(folder_paths.models_dir, exDir, os.path.basename(model_id))
-    cache_model_checkpoint = os.path.join(folder_paths.cache_dir, exDir, os.path.basename(model_id))
+    cache_model_checkpoint = os.path.join(folder_paths.cache_dir, "models", exDir, os.path.basename(model_id))
+    if os.path.exists(cache_model_checkpoint):
+      return cache_model_checkpoint
     print(model_checkpoint)
     if not os.path.exists(model_checkpoint):
         if os.path.exists(cache_model_checkpoint):
